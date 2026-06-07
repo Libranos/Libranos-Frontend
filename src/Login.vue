@@ -1,14 +1,36 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import { ref } from 'vue'
-import mulher from '@/img/mulher.png'
+import mulher from './img/mulher.png'
+
 
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
+const router = useRouter()
 
-function handleLogin() {
-  console.log('Login attempt', { email: email.value, password: password.value })
-  alert(`Tentativa de login: ${email.value}`)
+
+async function handleLogin() {
+  try {
+    const res = await fetch('http://localhost:8005/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.value, password: password.value })
+    })
+
+    if (!res.ok) {
+      alert('Email ou senha incorretos')
+      return
+    }
+
+    const data = await res.json()
+    localStorage.setItem('token', data.token)
+    router.push('/modulos')
+
+  } catch (erro) {
+    console.error('Erro ao fazer login:', erro)
+    alert('Erro ao conectar com o servidor.')
+  }
 }
 
 function loginWithGoogle() {
@@ -88,7 +110,7 @@ function loginWithFacebook() {
               <a href="#" class="forgot-password">Esqueceu sua senha?</a>
             </div>
 
-            <button type="submit" class="btn-entrar">
+            <button @click="handleLogin" type="submit" class="btn-entrar">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
               </svg>
@@ -165,7 +187,7 @@ function loginWithFacebook() {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('@/img/maos.png');
+  background-image: url('./img/maos.png');
   background-size: cover;
   background-position: center;
   opacity: 0.09; 
