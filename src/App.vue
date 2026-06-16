@@ -1,10 +1,7 @@
-<script setup lang="ts">
-import login from './Login.vue'
-import modulos from './Modulos.vue'
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <login />
+  <router-view />
 </template>
 
 <style>
