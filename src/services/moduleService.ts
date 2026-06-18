@@ -16,6 +16,11 @@ export async function updateModulo(id: number, dto: ModuloRequest): Promise<Modu
   return data
 }
 
+export async function getModuloById(id: number): Promise<Modulo> {
+  const { data } = await apiClient.get<Modulo>(`/api/modulos/${id}`)
+  return data
+}
+
 export async function deleteModulo(id: number): Promise<void> {
   await apiClient.delete(`/api/modulos/${id}`)
 }
