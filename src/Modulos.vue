@@ -91,7 +91,7 @@ onMounted(() => moduloStore.fetchModulos())
 <style scoped>
 .page-content {
   padding: 28px 32px;
-  max-width: 900px;
+  width: 100%;
   background-color: #f4f6f9;
 }
 
