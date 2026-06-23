@@ -6,6 +6,7 @@ export interface Aula {
   ativo: boolean
   moduloId: number
   moduloTitulo: string
+  videoUrl: string
   createdAt: string
 }
 
@@ -14,4 +15,5 @@ export interface AulaRequest {
   descricao?: string
   ordem: number
   moduloId: number
+  videoUrl: string
 }

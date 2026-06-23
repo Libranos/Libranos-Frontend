@@ -15,19 +15,26 @@ const emit = defineEmits<{
 
 const aulaStore = useAulaStore()
 
-const form = reactive<Omit<AulaRequest, 'moduloId'>>({ titulo: '', descricao: '', ordem: 1 })
+const form = reactive<Omit<AulaRequest, 'moduloId'>>({ 
+  titulo: '', 
+  descricao: '', 
+  ordem: 1,
+  videoUrl: ''
+})
 
 watch(
   () => props.aulaParaEditar,
   (aula) => {
     if (aula) {
-      form.titulo    = aula.titulo
+      form.titulo = aula.titulo
       form.descricao = aula.descricao ?? ''
-      form.ordem     = aula.ordem
+      form.ordem = aula.ordem
+      form.videoUrl = aula.videoUrl ?? ''
     } else {
-      form.titulo    = ''
+      form.titulo = ''
       form.descricao = ''
-      form.ordem     = 1
+      form.ordem = 1
+      form.videoUrl = ''
     }
   },
   { immediate: true }
@@ -37,19 +44,36 @@ function fechar(): void {
   emit('update:modelValue', false)
 }
 
+function converterYoutube(url: string) {
+  const match = url.match(
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/
+  )
+
+  return match
+    ? `https://www.youtube.com/embed/${match[1]}`
+    : url
+}
+
 async function salvar(): Promise<void> {
   try {
-    const dto: AulaRequest = { ...form, moduloId: props.moduloId }
+    const dto: AulaRequest = {...form,
+      videoUrl: converterYoutube(form.videoUrl),
+      moduloId: props.moduloId
+    }
     if (props.aulaParaEditar) {
       await aulaStore.atualizar(props.aulaParaEditar.id, dto)
     } else {
       await aulaStore.criar(dto)
     }
+    await aulaStore.fetchAulas(props.moduloId)
     fechar()
   } catch {
     // erro exposto via aulaStore.error
   }
 }
+
+
+
 </script>
 
 <template>
@@ -78,6 +102,14 @@ async function salvar(): Promise<void> {
             outlined
             type="textarea"
             autogrow
+            class="q-mb-md"
+            :disable="aulaStore.isLoading"
+          />
+
+          <q-input
+            v-model="form.videoUrl"
+            label="URL do vídeo"
+            outlined
             class="q-mb-md"
             :disable="aulaStore.isLoading"
           />

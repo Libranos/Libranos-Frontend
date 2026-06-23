@@ -74,7 +74,7 @@ onMounted(() => moduloStore.fetchModulos())
       fixed
       icon="add"
       color="primary"
-      style="bottom: 32px; right: 32px"
+      style="bottom: 10px; right: 20px"
       @click="abrirCriacao"
     >
       <q-tooltip>Criar novo módulo</q-tooltip>

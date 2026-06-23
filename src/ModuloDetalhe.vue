@@ -8,17 +8,18 @@ import { getModuloById }  from '@/services/moduleService'
 import AulaFormDialog     from '@/components/aulas/AulaFormDialog.vue'
 import type { Aula }      from '@/interfaces/aula'
 import type { Modulo }    from '@/interfaces/modulo'
+import { useAtividadeStore } from '@/stores/atividade'
 
-// ── Sample video (placeholder – substituir pela URL real do vídeo) ─────────
-const SAMPLE_VIDEO = 'https://www.youtube.com/embed/YE7VzlLtp-4'
+
 
 const route       = useRoute()
 const router      = useRouter()
 const moduloStore = useModuloStore()
 const aulaStore   = useAulaStore()
+const atividadeStore = useAtividadeStore()
 const authStore   = useAuthStore()
 
-const moduloId = computed(() => Number(route.params.id))
+const moduloId = computed(() => Number(route.params.id || 0))
 
 const modulo     = ref<Modulo | null>(null)
 const isLoadingModulo = ref(false)
@@ -33,13 +34,18 @@ const aulaAtiva      = ref<Aula | null>(null)
 const dialogAberto   = ref(false)
 const aulaParaEditar = ref<Aula | undefined>(undefined)
 
-const videoSrc = computed(() =>
-  (aulaAtiva.value as any)?.videoUrl ?? SAMPLE_VIDEO
-)
+const videoSrc = computed(() => aulaAtiva.value?.videoUrl ?? null)
 
 const aulaIndex   = computed(() => aulas.value.findIndex(a => a.id === aulaAtiva.value?.id))
 const aulaAnterior = computed(() => aulaIndex.value > 0 ? aulas.value[aulaIndex.value - 1] : null)
 const proximaAula  = computed(() => aulaIndex.value < aulas.value.length - 1 ? aulas.value[aulaIndex.value + 1] : null)
+const atividades = computed(() => aulaAtiva.value? (atividadeStore.atividadesByAula[aulaAtiva.value.id] ?? []): [])
+const respostasSelecionadas = ref<Record<number, number | null>>({})
+const respostasAcertadas = ref<Record<number, boolean>>({})
+const respostasFeedback = ref<Record<number, boolean>>({})
+const respostasConfirmadas = ref<Record<number, boolean>>({})
+const atividadesRespondidas = ref<Record<number, boolean>>({})
+
 
 onMounted(async () => {
   isLoadingModulo.value = true
@@ -64,6 +70,12 @@ watch(aulas, (lista) => {
   }
 })
 
+watch(aulaAtiva, async (aula) => {
+  if (!aula) return
+
+  await atividadeStore.fetchAtividades(aula.id)
+})
+
 function selecionarAula(aula: Aula) {
   aulaAtiva.value = aula
 }
@@ -80,10 +92,27 @@ function abrirEdicao(aula: Aula) {
 
 async function removerAula(aulaId: number) {
   await aulaStore.remover(aulaId, moduloId.value)
+  await aulaStore.fetchAulas(moduloId.value) // 🔥 AQUI
   if (aulaAtiva.value?.id === aulaId) {
     aulaAtiva.value = aulas.value[0] ?? null
   }
 }
+
+function selecionarResposta(atividadeId: number, alternativaIndex: number) {
+  if (respostasAcertadas.value[atividadeId]) return
+  respostasSelecionadas.value[atividadeId] = alternativaIndex
+}
+
+function confirmarResposta(atividade: any) {
+  const selecionada = respostasSelecionadas.value[atividade.id]
+  if (selecionada === null || selecionada === undefined) return
+  const opcaoSelecionada = atividade.alternativas[selecionada]
+  const acertou = !!opcaoSelecionada.correta
+  respostasConfirmadas.value[atividade.id] = true
+  respostasFeedback.value[atividade.id] = acertou
+  respostasAcertadas.value[atividade.id] = acertou
+}
+
 </script>
 
 <template>
@@ -227,6 +256,7 @@ async function removerAula(aulaId: number) {
           <div class="video-section">
             <div class="video-wrapper">
               <iframe
+                v-if="videoSrc"
                 :key="aulaAtiva.id"
                 :src="videoSrc"
                 title="Vídeo da aula"
@@ -234,6 +264,10 @@ async function removerAula(aulaId: number) {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen
               ></iframe>
+              <div v-else class="video-placeholder">
+                <q-icon name="videocam_off" size="48px" color="grey-6" />
+                <span>Nenhum vídeo cadastrado para esta aula</span>
+              </div>
             </div>
           </div>
 
@@ -290,6 +324,45 @@ async function removerAula(aulaId: number) {
             <section v-if="aulaAtiva.descricao" class="descricao-section">
               <h2 class="descricao-titulo">Sobre esta aula</h2>
               <p class="descricao-texto">{{ aulaAtiva.descricao }}</p>
+            </section>
+
+            <section v-if="atividades.length" class="atividades-section">
+              <h2 class="descricao-titulo">Atividades</h2>
+
+              <div class="atividades-grid">
+                <div v-for="atividade in atividades":key="atividade.id"class="atividade-card">
+                  <p class="atividade-pergunta">{{ atividade.titulo }}</p>
+
+                  <div class="opcoes-grid">
+                    <button
+                      v-for="(opcao, index) in atividade.alternativas"
+                      :key="index"
+                      class="opcao-btn"
+                      @click="selecionarResposta(atividade.id, index)"
+                      :class="{
+                        'opcao-selecionada': respostasSelecionadas[atividade.id] === index,
+
+                        'correta':
+                          respostasConfirmadas[atividade.id] &&
+                          opcao.correta,
+
+                        'errada':
+                          respostasConfirmadas[atividade.id] &&
+                          respostasSelecionadas[atividade.id] === index &&
+                          !opcao.correta
+                      }">{{ opcao.texto }}
+                    </button>
+
+                    <div class="confirmar-wrapper">
+                      <button
+                        class="confirmar-btn"
+                        @click="confirmarResposta(atividade)">
+                        Confirmar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </section>
 
             <!-- Navegação entre aulas -->
@@ -354,9 +427,11 @@ async function removerAula(aulaId: number) {
 ════════════════════════════════════════════════ */
 .detalhe-layout {
   display: flex;
-  height: calc(100vh - 50px); /* 50px = altura do q-header */
+  height: calc(100vh - 50px);
   overflow: hidden;
+  min-height: 0;
 }
+
 
 /* ════════════════════════════════════════════════
    SIDEBAR
@@ -604,12 +679,12 @@ async function removerAula(aulaId: number) {
 ════════════════════════════════════════════════ */
 .main-area {
   flex: 1;
+  min-height: 0;
+  height: 100%;
   overflow-y: auto;
   background: #111d28;
   display: flex;
   flex-direction: column;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 
 /* — Estados vazios / loading — */
@@ -661,14 +736,25 @@ async function removerAula(aulaId: number) {
   display: block;
 }
 
+.video-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #1a2a38;
+  color: #4a6880;
+  font-size: 0.88rem;
+}
+
 /* ════════════════════════════════════════════════
    PAINEL DE INFORMAÇÕES DA AULA
 ════════════════════════════════════════════════ */
 .aula-info {
   background: #fff;
-  flex: 1;
   padding: 28px 36px 48px;
-  min-height: 0;
 }
 
 /* — Breadcrumb — */
@@ -738,6 +824,139 @@ async function removerAula(aulaId: number) {
   line-height: 1.75;
   margin: 0;
   max-width: 680px;
+}
+
+.atividades-section {
+  margin-top: 24px;
+}
+
+.atividades-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.atividade-card {
+  padding: 18px;
+  border: 1px solid #e6eef5;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(15, 34, 51, 0.04);
+}
+
+.atividade-pergunta {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1f3852;
+  margin-bottom: 14px;
+}
+
+/* GRID 2x2 */
+.opcoes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* BOTÃO */
+.opcao-btn {
+  padding: 12px 14px;
+  border: 1px solid #d6e2ec;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #f9fbfd;
+  color: #1f3852;
+  font-weight: 500;
+  font-size: 0.88rem;
+  text-align: left;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* HOVER */
+.opcao-btn:hover {
+  background: #eef6ff;
+  border-color: #3a9bd5;
+  transform: translateY(-1px);
+}
+
+/* SELECIONADA */
+.opcao-selecionada {
+  background: #3a9bd5;
+  color: white;
+  border-color: #3a9bd5;
+  box-shadow: 0 6px 16px rgba(58, 155, 213, 0.25);
+}
+
+.confirmar-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.confirmar-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: #3a9bd5;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.75rem;
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.confirmar-btn:hover {
+  background: #2f89c6;
+}
+
+/* CERTO */
+.correta {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+  color: white !important;
+  animation: pop 0.25s ease;
+}
+
+/* ERRADO */
+.errada {
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: white !important;
+  animation: shake 0.25s ease;
+}
+
+.bloqueado {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* animação acerto */
+@keyframes pop {
+  0% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+/* animação erro */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .opcoes-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* — Navegação anterior / próxima — */
