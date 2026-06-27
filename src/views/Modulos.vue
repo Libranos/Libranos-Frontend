@@ -33,7 +33,7 @@ onMounted(() => moduloStore.fetchModulos())
       Bem vindo{{ authStore.isTeacher ? ', Professor' : '' }}!
     </p>
 
-    <!-- Skeleton enquanto carrega -->
+    <!-- Skeleton -->
     <template v-if="moduloStore.isLoading && moduloStore.modulos.length === 0">
       <div class="skeleton-destaque"></div>
       <div class="skeleton-grid">
@@ -61,15 +61,12 @@ onMounted(() => moduloStore.fetchModulos())
       </div>
     </template>
 
-    <!-- FAB somente professores -->
-    <q-btn
-      v-if="authStore.isTeacher"
-      fab fixed icon="add" color="primary"
-      style="bottom: 10px; right: 20px"
-      @click="abrirCriacao"
-    >
-      <q-tooltip>Criar novo módulo</q-tooltip>
-    </q-btn>
+    <!-- FAB — canto inferior direito, padrão Material Design -->
+    <q-page-sticky v-if="authStore.isTeacher" position="bottom-right" :offset="[24, 24]">
+      <q-btn fab icon="add" color="primary" @click="abrirCriacao">
+        <q-tooltip anchor="top middle" self="bottom middle">Criar novo módulo</q-tooltip>
+      </q-btn>
+    </q-page-sticky>
 
     <ModuloFormDialog v-model="dialogAberto" :modulo-para-editar="moduloParaEditar" />
 
@@ -79,6 +76,8 @@ onMounted(() => moduloStore.fetchModulos())
 <style scoped>
 .page-content {
   padding: 28px 32px;
+  /* padding-bottom generoso pra não esconder conteúdo atrás do FAB */
+  padding-bottom: 90px;
   width: 100%;
   background-color: #f4f6f9;
 }
@@ -130,6 +129,6 @@ onMounted(() => moduloStore.fetchModulos())
 }
 
 @media (max-width: 600px) {
-  .page-content { padding: 20px 16px; }
+  .page-content { padding: 20px 16px 80px; }
 }
 </style>

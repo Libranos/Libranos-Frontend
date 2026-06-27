@@ -4,16 +4,20 @@ import AulasSidebar from '@/components/aulas/AulasSidebar.vue'
 import AulaPlayer from '@/components/aulas/AulaPlayer.vue'
 import AulaAtividades from '@/components/atividades/AulaAtividades.vue'
 import AulaFormDialog from '@/components/aulas/AulaFormDialog.vue'
+import AtividadeFormDialog from '@/components/atividades/AtividadeFormDialog.vue'
 
 const {
   moduloId, modulo, isLoadingModulo,
   aulas, aulaAtiva, aulaAnterior, proximaAula, videoSrc,
   atividades,
   respostasSelecionadas, respostasAcertadas, respostasFeedback, respostasConfirmadas,
-  dialogAberto, aulaParaEditar,
+  dialogAulaAberto, aulaParaEditar,
+  dialogAtividadeAberto, atividadeParaEditar, proximaOrdemAtividade,
   aulaStore, authStore,
-  selecionarAula, abrirCriacao, abrirEdicao, removerAula,
-  selecionarResposta, confirmarResposta, voltar,
+  selecionarAula, abrirCriacaoAula, abrirEdicaoAula, removerAula,
+  abrirCriacaoAtividade, abrirEdicaoAtividade, removerAtividade,
+  selecionarResposta, confirmarTodas,
+  voltar,
 } = useModuloDetalhe()
 </script>
 
@@ -21,7 +25,7 @@ const {
   <q-page class="detalhe-page">
     <div class="detalhe-layout">
 
-      <!-- Sidebar com lista de aulas -->
+      <!-- Sidebar -->
       <AulasSidebar
         :modulo="modulo"
         :is-loading-modulo="isLoadingModulo"
@@ -31,28 +35,25 @@ const {
         :is-teacher="authStore.isTeacher"
         @voltar="voltar"
         @selecionar-aula="selecionarAula"
-        @editar-aula="abrirEdicao"
+        @editar-aula="abrirEdicaoAula"
         @remover-aula="removerAula"
-        @adicionar-aula="abrirCriacao"
+        @adicionar-aula="abrirCriacaoAula"
       />
 
       <!-- Área principal -->
       <main class="main-area">
 
-        <!-- Vazio -->
         <div v-if="!aulaAtiva && !aulaStore.isLoading" class="estado-vazio">
           <q-icon name="play_circle_outline" size="72px" color="blue-grey-7" />
           <p class="estado-vazio-titulo">Selecione uma aula</p>
           <p class="estado-vazio-sub">Escolha uma aula na lista ao lado para começar</p>
         </div>
 
-        <!-- Loading -->
         <div v-else-if="aulaStore.isLoading && !aulaAtiva" class="estado-vazio">
           <q-spinner-dots size="48px" color="blue-grey-7" />
           <p class="estado-vazio-sub q-mt-md">Carregando aulas...</p>
         </div>
 
-        <!-- Player + conteúdo -->
         <AulaPlayer
           v-else-if="aulaAtiva"
           :aula="aulaAtiva"
@@ -62,7 +63,7 @@ const {
           :aula-anterior="aulaAnterior"
           :proxima-aula="proximaAula"
           :is-teacher="authStore.isTeacher"
-          @editar-aula="abrirEdicao"
+          @editar-aula="abrirEdicaoAula"
           @navegar="selecionarAula"
         >
           <template #atividades>
@@ -71,8 +72,12 @@ const {
               :respostas-selecionadas="respostasSelecionadas"
               :respostas-confirmadas="respostasConfirmadas"
               :respostas-acertadas="respostasAcertadas"
+              :is-teacher="authStore.isTeacher"
               @selecionar-resposta="selecionarResposta"
-              @confirmar-resposta="confirmarResposta"
+              @confirmar-todas="confirmarTodas"
+              @adicionar-atividade="abrirCriacaoAtividade"
+              @editar-atividade="abrirEdicaoAtividade"
+              @remover-atividade="removerAtividade"
             />
           </template>
         </AulaPlayer>
@@ -80,11 +85,19 @@ const {
       </main>
     </div>
 
-    <!-- Dialog criar/editar aula -->
+    <!-- Dialog de aula -->
     <AulaFormDialog
-      v-model="dialogAberto"
+      v-model="dialogAulaAberto"
       :modulo-id="moduloId"
       :aula-para-editar="aulaParaEditar"
+    />
+
+    <!-- Dialog de atividade -->
+    <AtividadeFormDialog
+      v-model="dialogAtividadeAberto"
+      :aula-id="aulaAtiva?.id ?? 0"
+      :atividade-para-editar="atividadeParaEditar"
+      :proxima-ordem="proximaOrdemAtividade"
     />
   </q-page>
 </template>
