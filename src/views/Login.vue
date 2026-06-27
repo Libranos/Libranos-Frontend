@@ -5,13 +5,12 @@ import LoginSocialButtons from '@/components/login/LoginSocialButtons.vue'
 </script>
 
 <template>
-  <div class="main">
-    <div class="card">
+  <div class="login-page">
+    <div class="login-promo">
       <LoginPromoCard />
     </div>
-
-    <div class="interactive">
-      <div class="login">
+    <div class="login-form-area">
+      <div class="login-form-wrap">
         <LoginForm />
         <LoginSocialButtons />
       </div>
@@ -20,7 +19,7 @@ import LoginSocialButtons from '@/components/login/LoginSocialButtons.vue'
 </template>
 
 <style scoped>
-.main {
+.login-page {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -29,19 +28,16 @@ import LoginSocialButtons from '@/components/login/LoginSocialButtons.vue'
   box-sizing: border-box;
 }
 
-.card {
-  flex: 0 0 40%;
-  max-width: 40%;
-}
+.login-promo { flex: 0 0 40%; max-width: 40%; }
 
-.interactive {
+.login-form-area {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.login {
+.login-form-wrap {
   width: 100%;
   max-width: 420px;
   padding: 0 1rem;
@@ -49,23 +45,12 @@ import LoginSocialButtons from '@/components/login/LoginSocialButtons.vue'
 }
 
 @media (max-width: 1100px) {
-  .main { padding: 1.5rem; gap: 1rem; }
+  .login-page { padding: 1.5rem; gap: 1rem; }
 }
 
 @media (max-width: 768px) {
-  .main {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 1rem;
-    background-color: white;
-  }
-
-  .card {
-    flex: none;
-    max-width: 100%;
-    width: 100%;
-  }
-
-  .interactive { width: 100%; }
+  .login-page { flex-direction: column; align-items: stretch; padding: 1rem; background-color: white; }
+  .login-promo { flex: none; max-width: 100%; width: 100%; }
+  .login-form-area { width: 100%; }
 }
 </style>

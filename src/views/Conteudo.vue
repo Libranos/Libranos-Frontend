@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useModuloStore } from '@/stores/modulo'
-import { useAuthStore }   from '@/stores/auth'
-import ModuloExpansion    from '@/components/conteudo/ModuloExpansion.vue'
-import ModuloFormDialog   from '@/components/modulos/ModuloFormDialog.vue'
-import type { Modulo }    from '@/interfaces/modulo'
+import { useAuthStore } from '@/stores/auth'
+import ModuloExpansion from '@/components/conteudo/ModuloExpansion.vue'
+import ModuloFormDialog from '@/components/modulos/ModuloFormDialog.vue'
+import type { Modulo } from '@/interfaces/modulo'
 
 const moduloStore = useModuloStore()
-const authStore   = useAuthStore()
+const authStore = useAuthStore()
 
-const dialogAberto     = ref(false)
+const dialogAberto = ref(false)
 const moduloParaEditar = ref<Modulo | undefined>(undefined)
 
 function abrirCriacao() {
@@ -59,23 +59,16 @@ onMounted(() => moduloStore.fetchModulos())
       </q-list>
     </template>
 
-    <!-- FAB criação de módulo: somente professores -->
     <q-btn
       v-if="authStore.isTeacher"
-      fab
-      fixed
-      icon="add"
-      color="primary"
+      fab fixed icon="add" color="primary"
       style="bottom: 32px; right: 32px"
       @click="abrirCriacao"
     >
       <q-tooltip>Criar novo módulo</q-tooltip>
     </q-btn>
 
-    <ModuloFormDialog
-      v-model="dialogAberto"
-      :modulo-para-editar="moduloParaEditar"
-    />
+    <ModuloFormDialog v-model="dialogAberto" :modulo-para-editar="moduloParaEditar" />
 
   </q-page>
 </template>
@@ -83,7 +76,7 @@ onMounted(() => moduloStore.fetchModulos())
 <style scoped>
 .page-content {
   padding: 28px 32px;
-  max-width: 860px;
+  width: 100%;
   background-color: #f4f6f9;
 }
 
@@ -91,7 +84,7 @@ onMounted(() => moduloStore.fetchModulos())
   font-size: 1.1rem;
   font-weight: 600;
   color: #1f3852;
-  margin: 0 0 20px 0;
+  margin: 0 0 20px;
 }
 
 @media (max-width: 600px) {

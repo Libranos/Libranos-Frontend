@@ -7,7 +7,12 @@ const router = createRouter({
     {
       path: '/',
       name: 'login',
-      component: () => import('@/Login.vue'),
+      component: () => import('@/views/Login.vue'),
+    },
+    {
+      path: '/cadastro',
+      name: 'cadastro',
+      component: () => import('@/views/Cadastro.vue'),
     },
     {
       path: '/',
@@ -17,17 +22,17 @@ const router = createRouter({
         {
           path: 'modulos',
           name: 'modulos',
-          component: () => import('@/Modulos.vue'),
+          component: () => import('@/views/Modulos.vue'),
         },
         {
           path: 'modulos/:id',
           name: 'modulo-detalhe',
-          component: () => import('@/ModuloDetalhe.vue'),
+          component: () => import('@/views/ModuloDetalhe.vue'),
         },
         {
           path: 'conteudo',
           name: 'conteudo',
-          component: () => import('@/Conteudo.vue'),
+          component: () => import('@/views/Conteudo.vue'),
         },
       ],
     },

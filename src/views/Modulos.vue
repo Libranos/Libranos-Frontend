@@ -1,24 +1,24 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useAuthStore }   from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth'
 import { useModuloStore } from '@/stores/modulo'
-import ModuloDestaque     from '@/components/modulos/ModuloDestaque.vue'
-import ModuloCard         from '@/components/modulos/ModuloCard.vue'
-import ModuloFormDialog   from '@/components/modulos/ModuloFormDialog.vue'
-import type { Modulo }    from '@/interfaces/modulo'
+import ModuloDestaque from '@/components/modulos/ModuloDestaque.vue'
+import ModuloCard from '@/components/modulos/ModuloCard.vue'
+import ModuloFormDialog from '@/components/modulos/ModuloFormDialog.vue'
+import type { Modulo } from '@/interfaces/modulo'
 
-const authStore   = useAuthStore()
+const authStore = useAuthStore()
 const moduloStore = useModuloStore()
 
-const dialogAberto     = ref(false)
+const dialogAberto = ref(false)
 const moduloParaEditar = ref<Modulo | undefined>(undefined)
 
-function abrirCriacao(): void {
+function abrirCriacao() {
   moduloParaEditar.value = undefined
   dialogAberto.value = true
 }
 
-function abrirEdicao(modulo: Modulo): void {
+function abrirEdicao(modulo: Modulo) {
   moduloParaEditar.value = modulo
   dialogAberto.value = true
 }
@@ -42,10 +42,7 @@ onMounted(() => moduloStore.fetchModulos())
     </template>
 
     <template v-else>
-      <ModuloDestaque
-        v-if="moduloStore.destaque"
-        :modulo="moduloStore.destaque"
-      />
+      <ModuloDestaque v-if="moduloStore.destaque" :modulo="moduloStore.destaque" />
 
       <div v-if="moduloStore.proximos.length > 0" class="proximas-section">
         <h3 class="proximas-titulo">Próximas aulas:</h3>
@@ -59,31 +56,22 @@ onMounted(() => moduloStore.fetchModulos())
         </div>
       </div>
 
-      <div
-        v-if="!moduloStore.destaque && moduloStore.proximos.length === 0"
-        class="vazio"
-      >
+      <div v-if="!moduloStore.destaque && moduloStore.proximos.length === 0" class="vazio">
         <p>Nenhum módulo disponível no momento.</p>
       </div>
     </template>
 
-    <!-- FAB de criação: somente professores -->
+    <!-- FAB somente professores -->
     <q-btn
       v-if="authStore.isTeacher"
-      fab
-      fixed
-      icon="add"
-      color="primary"
+      fab fixed icon="add" color="primary"
       style="bottom: 10px; right: 20px"
       @click="abrirCriacao"
     >
       <q-tooltip>Criar novo módulo</q-tooltip>
     </q-btn>
 
-    <ModuloFormDialog
-      v-model="dialogAberto"
-      :modulo-para-editar="moduloParaEditar"
-    />
+    <ModuloFormDialog v-model="dialogAberto" :modulo-para-editar="moduloParaEditar" />
 
   </q-page>
 </template>
@@ -91,7 +79,7 @@ onMounted(() => moduloStore.fetchModulos())
 <style scoped>
 .page-content {
   padding: 28px 32px;
-  max-width: 900px;
+  width: 100%;
   background-color: #f4f6f9;
 }
 
@@ -99,18 +87,16 @@ onMounted(() => moduloStore.fetchModulos())
   font-size: 1.1rem;
   font-weight: 600;
   color: #1f3852;
-  margin: 0 0 20px 0;
+  margin: 0 0 20px;
 }
 
-.proximas-section {
-  margin-top: 8px;
-}
+.proximas-section { margin-top: 8px; }
 
 .proximas-titulo {
   font-size: 1rem;
   font-weight: 700;
   color: #1f3852;
-  margin: 0 0 16px 0;
+  margin: 0 0 16px;
 }
 
 .proximas-grid {
@@ -127,11 +113,7 @@ onMounted(() => moduloStore.fetchModulos())
   animation: pulse 1.4s ease-in-out infinite;
 }
 
-.skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
+.skeleton-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 
 .skeleton-card {
   background: #e0e0e0;
@@ -140,11 +122,7 @@ onMounted(() => moduloStore.fetchModulos())
   animation: pulse 1.4s ease-in-out infinite;
 }
 
-.vazio {
-  color: #888;
-  font-size: 0.95rem;
-  margin-top: 40px;
-}
+.vazio { color: #888; font-size: 0.95rem; margin-top: 40px; }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }

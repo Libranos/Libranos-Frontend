@@ -11,7 +11,11 @@ export const apiClient = axios.create({
 // Injeta o JWT em toda requisição autenticada automaticamente
 apiClient.interceptors.request.use((config) => {
   const token = getAuthToken()
-  if (token) {
+  const isPublicRoute =
+    config.url?.includes('/auth/login') ||
+    config.url?.includes('/auth/signup')
+
+  if (token && !isPublicRoute) {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config

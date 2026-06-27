@@ -1,9 +1,9 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { isAxiosError } from 'axios'
-import { loginUser } from '@/services/authService'
+import { loginUser, registerUser } from '@/services/authService'
 import { getAuthToken, setAuthToken, removeAuthToken, getUserRole, setUserRole, removeUserRole } from '@/utils/cookies'
-import type { LoginCredentials, AuthUser, Role } from '@/interfaces/auth'
+import type { LoginCredentials, AuthUser, Role, RegisterRequest } from '@/interfaces/auth'
 import router from '@/router'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -20,7 +20,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => token.value !== null)
   const isTeacher       = computed(() => role.value === 'TEACHER')
 
-  // ── Regras de validação (consumidas pelo q-form no LoginForm.vue) ──────────
+  // ── Regras de validação ────────────────────────────────────────────────────
 
   const emailRules = [
     (v: string) => !!v || 'E-mail é obrigatório',
@@ -28,6 +28,16 @@ export const useAuthStore = defineStore('auth', () => {
   ]
 
   const passwordRules = [(v: string) => !!v || 'Senha é obrigatória']
+
+  const fullNameRules = [
+    (v: string) => !!v || 'Nome completo é obrigatório',
+    (v: string) => v.trim().split(' ').length >= 2 || 'Informe nome e sobrenome',
+  ]
+
+  const confirmPasswordRules = (senha: string) => [
+    (v: string) => !!v || 'Confirmação de senha é obrigatória',
+    (v: string) => v === senha || 'As senhas não coincidem',
+  ]
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
@@ -59,6 +69,31 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function register(dto: RegisterRequest): Promise<boolean> {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      await registerUser(dto)
+      return true
+    } catch (err) {
+      if (isAxiosError(err)) {
+        if (err.response?.status === 409) {
+          error.value = 'Este e-mail já está cadastrado.'
+        } else if (err.response?.status === 400) {
+          error.value = 'Dados inválidos. Verifique as informações e tente novamente.'
+        } else {
+          error.value = 'Não foi possível conectar ao servidor. Tente novamente.'
+        }
+      } else {
+        error.value = 'Ocorreu um erro inesperado.'
+      }
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   function logout(): void {
     token.value = null
     role.value  = null
@@ -77,18 +112,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   return {
-    token,
-    role,
-    user,
-    isLoading,
-    error,
-    isAuthenticated,
-    isTeacher,
-    emailRules,
-    passwordRules,
-    login,
-    logout,
-    loginWithGoogle,
-    loginWithFacebook,
+    token, role, user, isLoading, error,
+    isAuthenticated, isTeacher,
+    emailRules, passwordRules, fullNameRules, confirmPasswordRules,
+    login, register, logout,
+    loginWithGoogle, loginWithFacebook,
   }
 })

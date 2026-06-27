@@ -15,3 +15,12 @@ export interface AuthUser {
   email: string
   role: Role
 }
+
+// ── Cadastro ─────────────────────────────────────────────────────────────────
+
+export interface RegisterRequest {
+  email: string
+  password: string
+  fullName: string
+  role: Role
+}
