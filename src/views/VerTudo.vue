@@ -90,29 +90,29 @@ onMounted(async () => {
   if (authStore.isTeacher) {
     // Para professores: carrega só total de aulas
     await Promise.all(
-      progressos.value.map(async (p, i) => {
+      progressos.value.map(async (p) => {
         try {
           await aulaStore.fetchAulas(p.moduloId)
           const aulas = aulaStore.aulasByModulo[p.moduloId] ?? []
-          progressos.value[i].totalAulas = aulas.length
-          progressos.value[i].isLoading  = false
+          p.totalAulas = aulas.length
+          p.isLoading  = false
         } catch {
-          progressos.value[i].isLoading = false
+          p.isLoading = false
         }
       })
     )
   } else {
     // Para alunos: carrega progresso real do backend
     await Promise.all(
-      progressos.value.map(async (p, i) => {
+      progressos.value.map(async (p) => {
         try {
           const prog: ProgressoModuloResponse = await getProgressoModulo(p.moduloId)
-          progressos.value[i].totalAulas        = Number(prog.totalAulas)
-          progressos.value[i].aulasConcluidadas = Number(prog.aulasConcluidadas)
-          progressos.value[i].percentual        = Math.round(prog.percentualConclusao)
-          progressos.value[i].isLoading         = false
+          p.totalAulas        = Number(prog.totalAulas)
+          p.aulasConcluidadas = Number(prog.aulasConcluidadas)
+          p.percentual        = Math.round(prog.percentualConclusao)
+          p.isLoading         = false
         } catch {
-          progressos.value[i].isLoading = false
+          p.isLoading = false
         }
       })
     )

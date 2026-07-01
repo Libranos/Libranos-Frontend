@@ -2,7 +2,7 @@ import axios from 'axios'
 import { getAuthToken } from '@/utils/cookies'
 
 export const apiClient = axios.create({
-  baseURL: '',
+  baseURL: 'https://libranosbackend.onrender.com',
   headers: { 'Content-Type': 'application/json' },
 })
 

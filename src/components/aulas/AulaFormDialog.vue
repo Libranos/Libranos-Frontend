@@ -24,7 +24,7 @@ const urlRaw = ref('')
 
 function extractYoutubeId(url: string): string | null {
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/)
-  return match ? match[1] : null
+  return match ? (match[1] ?? null) : null
 }
 
 const previewSrc = computed(() => {

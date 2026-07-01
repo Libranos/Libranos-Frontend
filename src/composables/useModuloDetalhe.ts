@@ -31,8 +31,8 @@ export function useModuloDetalhe() {
 
   const aulaAtiva    = ref<Aula | null>(null)
   const aulaIndex    = computed(() => aulas.value.findIndex(a => a.id === aulaAtiva.value?.id))
-  const aulaAnterior = computed(() => aulaIndex.value > 0 ? aulas.value[aulaIndex.value - 1] : null)
-  const proximaAula  = computed(() => aulaIndex.value < aulas.value.length - 1 ? aulas.value[aulaIndex.value + 1] : null)
+  const aulaAnterior = computed(() => aulaIndex.value > 0 ? (aulas.value[aulaIndex.value - 1] ?? null) : null)
+  const proximaAula  = computed(() => aulaIndex.value < aulas.value.length - 1 ? (aulas.value[aulaIndex.value + 1] ?? null) : null)
   const videoSrc     = computed(() => aulaAtiva.value?.videoUrl ?? null)
 
   const atividades = computed(() =>
@@ -76,12 +76,12 @@ export function useModuloDetalhe() {
     ])
 
     if (aulas.value.length > 0 && !aulaAtiva.value) {
-      aulaAtiva.value = aulas.value[0]
+      aulaAtiva.value = aulas.value[0] ?? null
     }
   })
 
   watch(aulas, (lista) => {
-    if (lista.length > 0 && !aulaAtiva.value) aulaAtiva.value = lista[0]
+    if (lista.length > 0 && !aulaAtiva.value) aulaAtiva.value = lista[0] ?? null
   })
 
   watch(aulaAtiva, async (aula) => {
