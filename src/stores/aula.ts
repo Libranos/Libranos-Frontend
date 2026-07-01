@@ -39,21 +39,18 @@ export const useAulaStore = defineStore('aula', () => {
   }
 
   async function atualizar(id: number, dto: AulaRequest) {
-  isLoading.value = true
-  error.value = null
-
-  try {
-    await updateAula(id, dto)
-    await fetchAulas(dto.moduloId)
-  } catch (e: any) {
-    error.value = e?.response?.data?.message ?? 'Erro ao atualizar aula'
-    throw e
-  } finally {
-    isLoading.value = false
+    isLoading.value = true
+    error.value = null
+    try {
+      await updateAula(id, dto)
+      await fetchAulas(dto.moduloId)
+    } catch (e: any) {
+      error.value = e?.response?.data?.message ?? 'Erro ao atualizar aula'
+      throw e
+    } finally {
+      isLoading.value = false
+    }
   }
-}
-
-
 
   async function remover(id: number, moduloId: number) {
     isLoading.value = true

@@ -35,17 +35,14 @@ function removeCookie(name: string, path = '/'): void {
   document.cookie = `${encodeURIComponent(name)}=; Expires=Thu, 01 Jan 1970 00:00:00 UTC; Path=${path}`
 }
 
-// ── Token ─────────────────────────────────────────────────────────────────────
-export const getAuthToken   = (): string | null => getCookie(AUTH_COOKIE)
-export const setAuthToken   = (token: string, expiresInMs?: number) => setCookie(AUTH_COOKIE, token, { expiresInMs })
+export const getAuthToken    = (): string | null => getCookie(AUTH_COOKIE)
+export const setAuthToken    = (token: string, expiresInMs?: number) => setCookie(AUTH_COOKIE, token, { expiresInMs })
 export const removeAuthToken = () => removeCookie(AUTH_COOKIE)
 
-// ── Role ──────────────────────────────────────────────────────────────────────
-export const getUserRole   = (): string | null => getCookie(ROLE_COOKIE)
-export const setUserRole   = (role: string, expiresInMs?: number) => setCookie(ROLE_COOKIE, role, { expiresInMs })
+export const getUserRole    = (): string | null => getCookie(ROLE_COOKIE)
+export const setUserRole    = (role: string, expiresInMs?: number) => setCookie(ROLE_COOKIE, role, { expiresInMs })
 export const removeUserRole = () => removeCookie(ROLE_COOKIE)
 
-// ── Email ─────────────────────────────────────────────────────────────────────
-export const getUserEmail   = (): string | null => getCookie(EMAIL_COOKIE)
-export const setUserEmail   = (email: string, expiresInMs?: number) => setCookie(EMAIL_COOKIE, email, { expiresInMs })
+export const getUserEmail    = (): string | null => getCookie(EMAIL_COOKIE)
+export const setUserEmail    = (email: string, expiresInMs?: number) => setCookie(EMAIL_COOKIE, email, { expiresInMs })
 export const removeUserEmail = () => removeCookie(EMAIL_COOKIE)

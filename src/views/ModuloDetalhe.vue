@@ -10,7 +10,7 @@ const {
   moduloId, modulo, isLoadingModulo,
   aulas, aulaAtiva, aulaAnterior, proximaAula, videoSrc,
   atividades,
-  respostasSelecionadas, respostasAcertadas, respostasFeedback, respostasConfirmadas,
+  respostasSelecionadas, respostasAcertadas, respostasConfirmadas,
   dialogAulaAberto, aulaParaEditar,
   dialogAtividadeAberto, atividadeParaEditar, proximaOrdemAtividade,
   aulaStore, authStore,
@@ -25,7 +25,6 @@ const {
   <q-page class="detalhe-page">
     <div class="detalhe-layout">
 
-      <!-- Sidebar -->
       <AulasSidebar
         :modulo="modulo"
         :is-loading-modulo="isLoadingModulo"
@@ -40,7 +39,6 @@ const {
         @adicionar-aula="abrirCriacaoAula"
       />
 
-      <!-- Área principal -->
       <main class="main-area">
 
         <div v-if="!aulaAtiva && !aulaStore.isLoading" class="estado-vazio">
@@ -85,14 +83,12 @@ const {
       </main>
     </div>
 
-    <!-- Dialog de aula -->
     <AulaFormDialog
       v-model="dialogAulaAberto"
       :modulo-id="moduloId"
       :aula-para-editar="aulaParaEditar"
     />
 
-    <!-- Dialog de atividade -->
     <AtividadeFormDialog
       v-model="dialogAtividadeAberto"
       :aula-id="aulaAtiva?.id ?? 0"

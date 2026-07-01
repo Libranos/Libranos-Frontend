@@ -5,31 +5,19 @@ import { getModulos, createModulo, updateModulo, deleteModulo } from '@/services
 import type { Modulo, ModuloRequest } from '@/interfaces/modulo'
 
 export const useModuloStore = defineStore('modulo', () => {
-  // ── Estado ─────────────────────────────────────────────────────────────────
-
   const modulos   = ref<Modulo[]>([])
   const isLoading = ref(false)
   const error     = ref<string | null>(null)
 
-  // ── Getters ────────────────────────────────────────────────────────────────
-
-  const ativos = computed(() =>
-    [...modulos.value].filter(m => m.ativo).sort((a, b) => a.ordem - b.ordem)
-  )
-
+  const ativos   = computed(() => [...modulos.value].filter(m => m.ativo).sort((a, b) => a.ordem - b.ordem))
   const destaque = computed(() => ativos.value[0] ?? null)
-
   const proximos = computed(() => ativos.value.slice(1))
 
-  // ── Regras de validação (consumidas pelo ModuloFormDialog) ─────────────────
-
-  const tituloRules  = [(v: string) => !!v || 'Título é obrigatório']
-  const ordemRules   = [
+  const tituloRules = [(v: string) => !!v || 'Título é obrigatório']
+  const ordemRules  = [
     (v: number | null) => v !== null || 'Ordem é obrigatória',
     (v: number) => v > 0 || 'Ordem deve ser maior que zero',
   ]
-
-  // ── Actions ────────────────────────────────────────────────────────────────
 
   async function fetchModulos(): Promise<void> {
     isLoading.value = true
@@ -37,9 +25,7 @@ export const useModuloStore = defineStore('modulo', () => {
     try {
       modulos.value = await getModulos()
     } catch (err) {
-      error.value = isAxiosError(err)
-        ? 'Erro ao carregar módulos.'
-        : 'Erro inesperado.'
+      error.value = isAxiosError(err) ? 'Erro ao carregar módulos.' : 'Erro inesperado.'
     } finally {
       isLoading.value = false
     }
@@ -49,8 +35,7 @@ export const useModuloStore = defineStore('modulo', () => {
     isLoading.value = true
     error.value = null
     try {
-      const novo = await createModulo(dto)
-      modulos.value.push(novo)
+      modulos.value.push(await createModulo(dto))
     } catch (err) {
       error.value = isAxiosError(err) && err.response?.status === 403
         ? 'Apenas professores podem criar módulos.'
@@ -91,17 +76,9 @@ export const useModuloStore = defineStore('modulo', () => {
   }
 
   return {
-    modulos,
-    isLoading,
-    error,
-    ativos,
-    destaque,
-    proximos,
-    tituloRules,
-    ordemRules,
-    fetchModulos,
-    criar,
-    atualizar,
-    remover,
+    modulos, isLoading, error,
+    ativos, destaque, proximos,
+    tituloRules, ordemRules,
+    fetchModulos, criar, atualizar, remover,
   }
 })

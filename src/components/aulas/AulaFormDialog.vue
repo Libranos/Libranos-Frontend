@@ -20,20 +20,16 @@ const form = reactive<Omit<AulaRequest, 'moduloId'>>({
   videoUrl: '',
 })
 
-// Converte qualquer link do YouTube para embed
-function converterYoutube(url: string): string {
-  if (!url) return ''
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/)
-  return match ? `https://www.youtube.com/embed/${match[1]}` : url
-}
-
-// URL raw digitada pelo usuário (antes de converter)
 const urlRaw = ref('')
 
-// Preview: só mostra se URL for YouTube válida
+function extractYoutubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/)
+  return match ? match[1] : null
+}
+
 const previewSrc = computed(() => {
-  const match = urlRaw.value.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/)
-  return match ? `https://www.youtube.com/embed/${match[1]}` : null
+  const id = extractYoutubeId(urlRaw.value)
+  return id ? `https://www.youtube.com/embed/${id}` : null
 })
 
 watch(urlRaw, (v) => { form.videoUrl = v })
@@ -45,7 +41,6 @@ watch(
       form.titulo    = aula.titulo
       form.descricao = aula.descricao ?? ''
       form.ordem     = aula.ordem
-      // guarda URL original para o input
       urlRaw.value   = aula.videoUrl ?? ''
       form.videoUrl  = aula.videoUrl ?? ''
     } else {
@@ -67,9 +62,10 @@ function fechar() { emit('update:modelValue', false) }
 
 async function salvar() {
   try {
+    const id = extractYoutubeId(form.videoUrl)
     const dto: AulaRequest = {
       ...form,
-      videoUrl: converterYoutube(form.videoUrl),
+      videoUrl: id ? `https://www.youtube.com/embed/${id}` : form.videoUrl,
       moduloId: props.moduloId,
     }
     if (props.aulaParaEditar) {
@@ -87,7 +83,6 @@ async function salvar() {
   <q-dialog :model-value="modelValue" @update:model-value="fechar" persistent>
     <q-card class="dialog-card">
 
-      <!-- ── Cabeçalho ── -->
       <div class="dialog-header">
         <div class="header-icon">
           <q-icon name="play_lesson" size="22px" color="white" />
@@ -100,11 +95,9 @@ async function salvar() {
         <q-btn icon="close" flat round dense color="white" @click="fechar" />
       </div>
 
-      <!-- ── Corpo ── -->
       <q-card-section class="dialog-body">
         <q-form @submit="salvar" greedy>
 
-          <!-- Título -->
           <div class="campo-grupo">
             <div class="campo-label">
               <q-icon name="title" size="16px" class="q-mr-xs" />
@@ -120,7 +113,6 @@ async function salvar() {
             />
           </div>
 
-          <!-- Ordem -->
           <div class="campo-grupo">
             <div class="campo-label">
               <q-icon name="format_list_numbered" size="16px" class="q-mr-xs" />
@@ -136,7 +128,6 @@ async function salvar() {
             />
           </div>
 
-          <!-- Descrição -->
           <div class="campo-grupo">
             <div class="campo-label">
               <q-icon name="notes" size="16px" class="q-mr-xs" />
@@ -150,7 +141,6 @@ async function salvar() {
             />
           </div>
 
-          <!-- Vídeo -->
           <div class="campo-grupo">
             <div class="campo-label">
               <q-icon name="smart_display" size="16px" class="q-mr-xs" />
@@ -167,7 +157,6 @@ async function salvar() {
               </template>
             </q-input>
 
-            <!-- Preview -->
             <div v-if="previewSrc" class="video-preview">
               <div class="video-preview-label">
                 <q-icon name="check_circle" color="positive" size="14px" />
@@ -189,13 +178,11 @@ async function salvar() {
             </div>
           </div>
 
-          <!-- Erro -->
           <q-banner v-if="aulaStore.error" class="text-negative q-mb-md" rounded dense>
             <template #avatar><q-icon name="error_outline" /></template>
             {{ aulaStore.error }}
           </q-banner>
 
-          <!-- Ações -->
           <div class="dialog-acoes">
             <q-btn label="Cancelar" flat color="grey-7" @click="fechar" :disable="aulaStore.isLoading" />
             <q-btn
@@ -220,7 +207,6 @@ async function salvar() {
   overflow: hidden;
 }
 
-/* Cabeçalho */
 .dialog-header {
   display: flex;
   align-items: center;
@@ -241,19 +227,9 @@ async function salvar() {
   flex-shrink: 0;
 }
 
-.header-titulo {
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
+.header-titulo { font-size: 1rem; font-weight: 700; line-height: 1.2; }
+.header-sub    { font-size: 0.75rem; opacity: 0.75; margin-top: 2px; }
 
-.header-sub {
-  font-size: 0.75rem;
-  opacity: 0.75;
-  margin-top: 2px;
-}
-
-/* Corpo */
 .dialog-body { padding: 20px 22px 4px; }
 
 .campo-grupo { margin-bottom: 18px; }
@@ -267,15 +243,9 @@ async function salvar() {
   margin-bottom: 7px;
 }
 
-.obrigatorio { color: #ef4444; margin-left: 2px; }
+.obrigatorio    { color: #ef4444; margin-left: 2px; }
+.campo-opcional { font-weight: 400; color: #9ca3af; margin-left: 4px; }
 
-.campo-opcional {
-  font-weight: 400;
-  color: #9ca3af;
-  margin-left: 4px;
-}
-
-/* Preview vídeo */
 .video-preview {
   margin-top: 10px;
   border-radius: 10px;
@@ -316,7 +286,6 @@ async function salvar() {
   color: #92400e;
 }
 
-/* Ações */
 .dialog-acoes {
   display: flex;
   justify-content: flex-end;
